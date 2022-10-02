@@ -3,10 +3,16 @@ from typing import Generator, Tuple, Type, Any, List, Union
 
 import importlib.metadata as importlib_metadata
 
-IND001 = 'IND001 hanging indentation in function/class definition must be 8 spaces'  # noqa: E501
-IND002 = (
-    'IND002 if the 1st argument is on the same line as the function/class '
-    + 'name, all arguments must be on the same line'
+IND101 = 'IND101 hanging indentation in function definition must be 8 spaces'
+IND102 = (
+    'IND102 if the 1st argument is on the same line as the function '
+    + 'name, all other arguments must be on the same line'
+)
+
+IND201 = 'IND201 hanging indentation in class definition must be 8 spaces'
+IND202 = (
+    'IND202 if the 1st base class is on the same line as the class '
+    + 'name, all other base classes must be on the same line'
 )
 
 EXPECTED_INDENT = 8  # https://peps.python.org/pep-0008/#indentation
@@ -17,28 +23,46 @@ class Visitor(ast.NodeVisitor):
         self.violations: List[Tuple[int, int, str]] = []
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        if len(node.args.args) > 0:
+        self._visit_func_args_or_class_bases(node, node.args.args, is_func=True)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self._visit_func_args_or_class_bases(node, node.bases, is_func=False)
+
+    def _visit_func_args_or_class_bases(
+            self,
+            node: Union[ast.FunctionDef, ast.ClassDef],
+            args_or_bases: Union[List[ast.arg], List[ast.Name]],
+            is_func: bool,
+    ) -> None:
+        if is_func:
+            code01 = IND101
+            code02 = IND102
+        else:
+            code01 = IND201
+            code02 = IND202
+
+        if len(args_or_bases) > 0:
             def_line_num = node.lineno
             def_col_offset = node.col_offset
 
-            if node.args.args[0].lineno == def_line_num:
-                for this_arg in node.args.args[1:]:
-                    if this_arg.lineno != def_line_num:
+            if args_or_bases[0].lineno == def_line_num:
+                for item in args_or_bases[1:]:
+                    if item.lineno != def_line_num:
                         self.violations.append(
-                            (this_arg.lineno, this_arg.col_offset + 1, IND002),
+                            (item.lineno, item.col_offset + 1, code02),
                         )
 
-            for i, this_arg in enumerate(node.args.args):
+            for i, item in enumerate(args_or_bases):
                 if i == 0:
-                    prev_arg_line_num = def_line_num
+                    prev_item_line_num = def_line_num
                 else:
-                    prev_arg_line_num = node.args.args[i - 1].lineno
+                    prev_item_line_num = args_or_bases[i - 1].lineno
 
                 # Only enforce indentation when this arg is on a new line
-                if this_arg.lineno > prev_arg_line_num:
-                    if this_arg.col_offset - def_col_offset != EXPECTED_INDENT:
+                if item.lineno > prev_item_line_num:
+                    if item.col_offset - def_col_offset != EXPECTED_INDENT:
                         self.violations.append(
-                            (this_arg.lineno, this_arg.col_offset + 1, IND001),
+                            (item.lineno, item.col_offset + 1, code01),
                         )
 
             self.generic_visit(node)
