@@ -99,8 +99,8 @@ class MyClass(
 
 case_4c = """
 class MyClass(
-        BaseClassA, 
-        BaseClassB, 
+        BaseClassA,
+        BaseClassB,
         BaseClassC,
 ):
     def __init__(self):
