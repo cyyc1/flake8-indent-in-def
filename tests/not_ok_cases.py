@@ -54,7 +54,7 @@ def run(arg1,
         arg2,  # it happens to indent 8 spaces, but this is still wrong
         arg3,
         arg4):
-    pass 
+    pass
 """
 case_1d = (
     case_1d_src,

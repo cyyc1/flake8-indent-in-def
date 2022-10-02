@@ -108,7 +108,6 @@ class MyClass(
 """
 
 
-
 def collect_all_cases():
     return (
         case_0,
