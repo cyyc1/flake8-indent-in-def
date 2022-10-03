@@ -97,17 +97,8 @@ class MyClass(
 ```
 You can opt out of class inheritence checks by ignoring rules `IND201` and `IND202`.
 
-## Rationale
+### _Notes_
 
-When we only indent by 4 spaces in function definitions, it is difficult to visually distinguish function arguments with the function name and the function body. This reduces readability.
-
-It is similar for base classes in class definitions, but it's less of an issue than function definitions.
-
-## Interaction with other style checkers and formatters
-
-* [`black`](https://github.com/psf/black)-formatted code will cause a style violation here, because `black` authors [explicitly opted for the 4-space indentation and do not plan to change it](https://github.com/psf/black/issues/1178#issuecomment-614050678)
-* The style enforced in this plugin contradicts with rule [WPS318](https://wemake-python-styleguide.readthedocs.io/en/latest/pages/usage/violations/consistency.html#wemake_python_styleguide.violations.consistency.ExtraIndentationViolation) enforced by [wemake-python-styleguide](https://github.com/wemake-services/wemake-python-styleguide) ("WPS")
-    - But WPS is configurable so you can always opt out of WPS318
 * This plugin does not check trailing commas, because [flake8-commas](https://github.com/PyCQA/flake8-commas) already does it
 * This plugin does not forbid grouping arguments (see example below), because [WPS317](https://wemake-python-styleguide.readthedocs.io/en/latest/pages/usage/violations/consistency.html#wemake_python_styleguide.violations.consistency.ParametersIndentationViolation) can enforce it
 ```python
@@ -117,3 +108,16 @@ def some_func(
 ):
     pass
 ```
+
+## Rationale
+
+When we only indent by 4 spaces in function definitions, it is difficult to visually distinguish function arguments with the function name and the function body. This reduces readability.
+
+It is similar for base classes in class definitions, but it's less of an issue than function definitions.
+
+## Interaction with other style checkers and formatters
+
+* By design, [`black`](https://github.com/psf/black)-formatted code will cause a style violation here, because `black` authors [explicitly opted for the 4-space indentation and do not plan to change it](https://github.com/psf/black/issues/1178#issuecomment-614050678)
+* The style enforced in this plugin contradicts with rule [WPS318](https://wemake-python-styleguide.readthedocs.io/en/latest/pages/usage/violations/consistency.html#wemake_python_styleguide.violations.consistency.ExtraIndentationViolation) enforced by [wemake-python-styleguide](https://github.com/wemake-services/wemake-python-styleguide) ("WPS")
+    - But WPS is configurable, so you can always opt out of WPS318
+* You can use [py-def-indent-formatter](https://github.com/cyyc1/py-def-indent-formatter) right after `black` to make your code satisfy the style requirements of this plugin
