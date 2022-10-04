@@ -1,8 +1,11 @@
 import os
 import ast
 import sys
+import tokenize
+
 import pytest
-from typing import Set
+import tempfile
+from typing import Set, List
 
 from flake8_indent_in_def import Plugin
 
@@ -15,10 +18,19 @@ import not_ok_cases  # noqa: E402
 
 def _results(src_code: str) -> Set[str]:
     tree = ast.parse(src_code)
-    plugin = Plugin(tree)
+    plugin = Plugin(tree=tree, file_tokens=_tokenize_string(string=src_code))
     return {
         f'{line}:{col} {msg}' for line, col, msg, _ in plugin.run()
     }
+
+
+def _tokenize_string(string: str) -> List[tokenize.TokenInfo]:
+    with tempfile.TemporaryFile() as fp:
+        fp.write(str.encode(string))
+        fp.seek(0)
+        tokens = list(tokenize.tokenize(fp.readline))
+
+    return tokens
 
 
 @pytest.mark.parametrize('src_code', ok_cases.collect_all_cases())

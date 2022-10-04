@@ -366,6 +366,91 @@ case_6a = (
 )
 
 
+case_6b_src = """
+def func6b(
+        arg6b1,
+    *,
+        arg6b2,
+        arg6b3,
+):
+    pass
+"""
+case_6b = (
+    case_6b_src, [(4, 5, IND101)],
+)
+
+
+case_6c_src = """
+def func6c(
+    arg6c1,
+    *, arg6c2, arg6c3,
+):
+    pass
+"""
+case_6c = (
+    case_6c_src, [(3, 5, IND101), (4, 5, IND101), (4, 8, IND101)],
+)
+
+
+case_6d_src = """
+def func6d(
+    arg6d1, *, 
+    arg6d2, arg6d3,
+):
+    pass
+"""
+case_6d = (
+    case_6d_src, [(3, 5, IND101), (4, 5, IND101)],
+)
+
+
+case_6e_src = """
+def func6e(arg6e1, *, 
+    arg6e2, arg6e3,
+):
+    pass
+"""
+case_6e = (
+    case_6e_src, [(3, 5, IND101), (3, 5, IND102), (3, 13, IND102)],
+)
+
+
+case_6f_src = """
+def func6f(*, 
+    arg6f2, arg6f3,
+):
+    pass
+"""
+case_6f = (
+    case_6f_src, [(3, 5, IND101)],
+)
+
+
+case_6g_src = """
+def func6g(
+    *, 
+    arg6g2, arg6g3,
+):
+    pass
+"""
+case_6g = (
+    case_6g_src, [(3, 5, IND101), (4, 5, IND101)],
+)
+
+
+case_6h_src = """
+def func6h(
+    *, 
+    arg6h2, 
+    arg6h3,
+):
+    pass
+"""
+case_6h = (
+    case_6h_src, [(3, 5, IND101), (4, 5, IND101), (5, 5, IND101)],
+)
+
+
 def collect_all_cases():
     return (
         case_1a,
@@ -396,4 +481,11 @@ def collect_all_cases():
         case_5d,
         case_5e,
         case_6a,
+        case_6b,
+        case_6c,
+        case_6d,
+        case_6e,
+        case_6f,
+        case_6g,
+        case_6h,
     )
