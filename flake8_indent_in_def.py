@@ -280,7 +280,7 @@ class Plugin:
     def __init__(
             self,
             tree: ast.AST,
-            file_tokens: list[tokenize.TokenInfo] = None,
+            file_tokens: List[tokenize.TokenInfo] = None,
     ) -> None:
         self._tree = tree
         self._file_tokens = file_tokens
