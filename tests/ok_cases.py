@@ -108,6 +108,22 @@ class MyClass(
 """
 
 
+case_5a = """
+def func5a(*, arg1, arg2):
+    print(1)
+"""
+
+
+case_5b = """
+def func5b(
+        *,
+        arg2,
+        arg3,
+):
+    print(1)
+"""
+
+
 def collect_all_cases():
     return (
         case_0,
@@ -123,4 +139,6 @@ def collect_all_cases():
         case_4a,
         case_4b,
         case_4c,
+        case_5a,
+        case_5b,
     )
