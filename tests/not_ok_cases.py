@@ -346,6 +346,25 @@ case_5e = [
 ]
 
 
+case_6a_src = """
+def func6a(
+    arg6a1,
+    *,
+    arg6a2,
+    arg6a3,
+):
+    pass
+"""
+case_6a = (
+    case_6a_src,
+    [
+        (3, 5, IND101),
+        (4, 5, IND101),
+        (5, 5, IND101),
+        (6, 5, IND101),
+    ],
+)
+
 
 def collect_all_cases():
     return (
@@ -376,4 +395,5 @@ def collect_all_cases():
         case_5c,
         case_5d,
         case_5e,
+        case_6a,
     )
