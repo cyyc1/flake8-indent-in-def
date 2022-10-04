@@ -24,7 +24,15 @@ There is one violation code that this plugin reports:
 
 ### _Wrong_
 
-This plugin, as well as [PEP8](https://peps.python.org/pep-0008/#indentation), considers the following indentation styles wrong:
+This plugin considers the following indentation styles wrong:
+
+```python
+def some_function(arg1,
+                  *,
+                  arg2,
+                  arg3):
+    print(arg1)
+```
 
 ```python
 def some_function(argument1,
@@ -33,12 +41,7 @@ def some_function(argument1,
     print(argument1)
 ```
 
-```python
-def some_function(arg1,
-                  arg2,
-                  arg3):
-    print(arg1)
-```
+This following style above is the style choice of the [`black` formatter](https://github.com/psf/black). Both this plugin and [PEP8](https://peps.python.org/pep-0008/#indentation) consider it wrong because arguments and function names would be difficult to visually distinghish.
 
 ```python
 def some_function(
@@ -49,8 +52,6 @@ def some_function(
     print(arg1)
 ```
 
-Note: this style above is the style choice of the [`black` formatter](https://github.com/psf/black). This style is wrong because arguments and function names would be difficult to visually distinghish.
-
 ### _Correct_
 
 Correspondingly, here are the correct indentation styles:
@@ -59,6 +60,7 @@ Correspondingly, here are the correct indentation styles:
 def some_function(
         arg1: int,
         arg2: list,
+        *,
         arg3: bool = None,
 ):
     print(arg1)
@@ -111,9 +113,19 @@ def some_func(
 
 ## Rationale
 
-When we only indent by 4 spaces in function definitions, it is difficult to visually distinguish function arguments with the function name and the function body. This reduces readability.
+When we only indent by 4 spaces in function definitions, it is difficult to visually distinguish function arguments with the function name and the function body. This reduces readability.  It is similar for base classes in class definitions, but it's less of an issue than function definitions.
 
-It is similar for base classes in class definitions, but it's less of an issue than function definitions.
+Specifically, the following style is allowed by PEP8 but this plugin still consider it wrong, because it could lead to messy code diff when refactoring:
+
+```diff
+- def some_very_very_very_very_long_func(arg1,
++ def refactored_function_name(arg1,
+                                         arg2,
+                                         arg3,
+
+):
+    return None
+```
 
 ## Interaction with other style checkers and formatters
 
