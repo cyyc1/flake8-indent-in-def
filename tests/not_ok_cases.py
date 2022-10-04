@@ -279,6 +279,73 @@ case_4f = (
     ],
 )
 
+# There's no case_5a for legacy reasons
+case_5b_src = """
+def func5b(
+    arg5b1,
+    *arg5b2,
+    **arg5b3,
+):
+    pass
+"""
+case_5b = (
+    case_5b_src,
+    [
+        (3, 5, IND101),
+        (4, 5, IND101),
+        (5, 5, IND101),
+    ],
+)
+
+
+case_5c_src = """
+def func5c(arg5c1,
+           arg5c2,
+           *arg5c3,
+           **arg5c4):
+    pass
+"""
+case_5c = [
+    case_5c_src,
+    [
+        (3, 12, IND101), (3, 12, IND102),
+        (4, 12, IND101), (4, 12, IND102),
+        (5, 12, IND101), (5, 12, IND102),
+    ]
+]
+
+
+case_5d_src = """
+def func5d(arg5d1, arg5d2,
+           *arg5d3,
+           **arg5d4):
+    pass
+"""
+case_5d = [
+    case_5d_src,
+    [
+        (3, 12, IND101), (3, 12, IND102),
+        (4, 12, IND101), (4, 12, IND102),
+    ]
+]
+
+
+case_5e_src = """
+def func5e(arg5e1, arg5e2,
+        *arg5e3,
+        **arg5e4,
+):
+    pass
+"""
+case_5e = [
+    case_5e_src,
+    [
+        (3, 9, IND102),
+        (4, 9, IND102),
+    ]
+]
+
+
 
 def collect_all_cases():
     return (
@@ -305,4 +372,8 @@ def collect_all_cases():
         case_4d,
         case_4e,
         case_4f,
+        case_5b,
+        case_5c,
+        case_5d,
+        case_5e,
     )
