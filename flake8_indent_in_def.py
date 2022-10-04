@@ -189,13 +189,9 @@ class Visitor(ast.NodeVisitor):
         # And then we also skip the 0th token because that is always
         # the ENCODING token (type 62).
         for i in range(1, len(self._tokens) - 2):
-            prev = self._tokens[i - 1]
-            this = self._tokens[i]
-            next = self._tokens[i + 1]
-            next_next = self._tokens[i + 2]
-
-            this_lineno = this.start[0]
-            this_col = this.start[1] + 1
+            this_token = self._tokens[i]
+            this_lineno = this_token.start[0]
+            this_col = this_token.start[1] + 1
             if func_def_lineno < this_lineno <= func_end_lineno:
                 if self._is_a_violation(node, self._tokens, i):
                     self.violations.append((this_lineno, this_col, IND101))
@@ -248,9 +244,9 @@ class Visitor(ast.NodeVisitor):
             next_next: tokenize.TokenInfo,
     ) -> bool:
         return (
-                cls._is_star(this)
-                and cls._is_newline(next)
-                and cls._is_comma(next_next)
+            cls._is_star(this)
+            and cls._is_newline(next)
+            and cls._is_comma(next_next)
         )
 
     @classmethod
@@ -264,8 +260,8 @@ class Visitor(ast.NodeVisitor):
     @classmethod
     def _is_newline(cls, token: tokenize.TokenInfo) -> bool:
         return (
-                token.type in {NL_TOKEN_CODE, NEWLINE_TOKEN_CODE}
-                and token.string == '\n'
+            token.type in {NL_TOKEN_CODE, NEWLINE_TOKEN_CODE}
+            and token.string == '\n'
         )
 
     @classmethod

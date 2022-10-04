@@ -311,7 +311,7 @@ case_5c = [
         (3, 12, IND101), (3, 12, IND102),
         (4, 12, IND101), (4, 12, IND102),
         (5, 12, IND101), (5, 12, IND102),
-    ]
+    ],
 ]
 
 
@@ -326,7 +326,7 @@ case_5d = [
     [
         (3, 12, IND101), (3, 12, IND102),
         (4, 12, IND101), (4, 12, IND102),
-    ]
+    ],
 ]
 
 
@@ -342,7 +342,7 @@ case_5e = [
     [
         (3, 9, IND102),
         (4, 9, IND102),
-    ]
+    ],
 ]
 
 
@@ -394,7 +394,7 @@ case_6c = (
 
 case_6d_src = """
 def func6d(
-    arg6d1, *, 
+    arg6d1, *,
     arg6d2, arg6d3,
 ):
     pass
@@ -405,7 +405,7 @@ case_6d = (
 
 
 case_6e_src = """
-def func6e(arg6e1, *, 
+def func6e(arg6e1, *,
     arg6e2, arg6e3,
 ):
     pass
@@ -416,7 +416,7 @@ case_6e = (
 
 
 case_6f_src = """
-def func6f(*, 
+def func6f(*,
     arg6f2, arg6f3,
 ):
     pass
@@ -428,7 +428,7 @@ case_6f = (
 
 case_6g_src = """
 def func6g(
-    *, 
+    *,
     arg6g2, arg6g3,
 ):
     pass
@@ -440,8 +440,8 @@ case_6g = (
 
 case_6h_src = """
 def func6h(
-    *, 
-    arg6h2, 
+    *,
+    arg6h2,
     arg6h3,
 ):
     pass
