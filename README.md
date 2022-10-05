@@ -118,10 +118,10 @@ When we only indent by 4 spaces in function definitions, it is difficult to visu
 Specifically, the following style is allowed by PEP8 but this plugin still consider it wrong, because it could lead to messy code diff when refactoring:
 
 ```diff
-- def some_very_very_very_very_long_func(arg1,
-+ def refactored_function_name(arg1,
-                                         arg2,
-                                         arg3,
+- def some_very_very_very_long_func(arg1,
++ def some_very_very_very_very_very_long_func(arg1,
+                                    arg2,
+                                    arg3,
 
 ):
     return None
