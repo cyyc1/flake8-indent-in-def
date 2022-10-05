@@ -39,14 +39,15 @@ class Visitor(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         sorted_args, arg_type_lookup, has_star = self._collect_func_args(node)
-        self._visit_func_args_or_class_bases(
-            node=node,
-            args_or_bases=sorted_args,
-            is_func=True,
-            arg_type_lookup=arg_type_lookup,
-        )
         if has_star:
             self._visit_star_in_arg_list(node)
+        else:
+            self._visit_func_args_or_class_bases(
+                node=node,
+                args_or_bases=sorted_args,
+                is_func=True,
+                arg_type_lookup=arg_type_lookup,
+            )
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self._visit_func_args_or_class_bases(node, node.bases, is_func=False)
@@ -180,7 +181,7 @@ class Visitor(ast.NodeVisitor):
 
         return item.col_offset - def_col_offset != expected_indent_
 
-    def _visit_star_in_arg_list(self, node: ast.FunctionDef):
+    def _visit_star_in_arg_list(self, node: ast.FunctionDef) -> None:
         func_def_lineno = node.lineno
         func_end_lineno = node.end_lineno
 
@@ -190,11 +191,49 @@ class Visitor(ast.NodeVisitor):
         # the ENCODING token (type 62).
         for i in range(1, len(self._tokens) - 2):
             this_token = self._tokens[i]
+            next_token = self._tokens[i + 1]
             this_lineno = this_token.start[0]
             this_col = this_token.start[1] + 1
-            if func_def_lineno < this_lineno <= func_end_lineno:
-                if self._is_a_violation(node, self._tokens, i):
-                    self.violations.append((this_lineno, this_col, IND101))
+            if func_def_lineno <= this_lineno <= func_end_lineno:
+                if self._is_star_comma(this=this_token, next=next_token):
+                    self._replace_args_field(node, this_token)
+                    self.visit_FunctionDef(node)
+                    return  # because there can only be one '*' in the arg list
+
+    @classmethod
+    def _replace_args_field(
+            cls,
+            node: ast.FunctionDef,
+            token: tokenize.TokenInfo,
+    ) -> None:
+        star_arg = cls._build_arg_obj(token)
+        new_args_unsorted = (
+            node.args.args  # List[ast.arg]
+            + [star_arg]
+            + node.args.posonlyargs  # List[ast.arg]
+            + node.args.kwonlyargs  # List[ast.arg]
+        )
+
+        new_args = sorted(
+            new_args_unsorted,
+            key=lambda x: (x.lineno, x.col_offset),  # first line, then col
+        )
+
+        node.args.posonlyargs = []
+        node.args.kwonlyargs = []
+        node.args.args = new_args
+
+    @classmethod
+    def _build_arg_obj(cls, token: tokenize.TokenInfo) -> ast.arg:
+        return ast.arg(
+            lineno=token.start[0],
+            col_offset=token.start[1],
+            end_lineno=token.end[0],
+            end_col_offset=token.end[1],
+            arg='*',
+            annotation=None,
+            type_comment=None,
+        )
 
     @classmethod
     def _is_a_violation(

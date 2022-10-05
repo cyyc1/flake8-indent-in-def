@@ -124,6 +124,38 @@ def func5b(
 """
 
 
+case_5c = """
+def func5c(
+        *, arg2, arg3,
+):
+    print(1)
+"""
+
+
+case_5d = """
+def func5d(
+        arg1,
+        arg2='hello',
+        *,
+        arg3,
+        arg4):
+    print(2)
+"""
+
+
+case_5e = """
+def func5e(
+        arg1, 
+        arg2,
+        *, 
+        arg3, 
+        **arg4,
+):
+    print(2)
+"""
+
+
+
 def collect_all_cases():
     return (
         case_0,
@@ -141,4 +173,7 @@ def collect_all_cases():
         case_4c,
         case_5a,
         case_5b,
+        case_5c,
+        case_5d,
+        case_5e,
     )
