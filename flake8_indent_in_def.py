@@ -57,23 +57,24 @@ class Visitor(ast.NodeVisitor):
             cls,
             node: ast.FunctionDef,
     ) -> Tuple[List, Dict[ast.arg, ArgType], bool]:
+        """Collect all args from function def; detect presence of * argument"""
         all_args: List[ast.arg] = []
         arg_type_lookup: Dict[ast.arg, ArgType] = {}
 
         has_star = False  # it means there's a '*,' in the argument list
 
-        if node.args.args:
+        if node.args.args:  # List[ast.arg]
             all_args.extend(node.args.args)
             for arg_ in node.args.args:
                 arg_type_lookup[arg_] = ArgType.REGULAR
 
-        if node.args.posonlyargs:
+        if node.args.posonlyargs:  # List[ast.arg]
             has_star = True
             all_args.extend(node.args.posonlyargs)
             for arg_ in node.args.posonlyargs:
                 arg_type_lookup[arg_] = ArgType.POS_ONLY
 
-        if node.args.kwonlyargs:
+        if node.args.kwonlyargs:  # List[ast.arg]
             has_star = True
             all_args.extend(node.args.kwonlyargs)
             for arg_ in node.args.kwonlyargs:
@@ -129,7 +130,10 @@ class Visitor(ast.NodeVisitor):
                         col_offset = self._calc_col_offset(item, arg_type)
                         self.violations.append((item.lineno, col_offset, code01))
 
-            self.generic_visit(node)
+        # Place this line OUTSIDE `if len(args_or_bases) > 0`, otherwise
+        # nested functions/classes will not be detected if the parent function
+        # has an empty input argument list
+        self.generic_visit(node)
 
     @classmethod
     def _calc_col_offset(

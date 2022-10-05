@@ -154,6 +154,41 @@ def func5e(
     print(2)
 """
 
+# Note: there's no case 6. This is to better match "no OK cases"
+
+case_7a = """
+def func7a_1():
+    def func7a_2():
+        def func7a_3():
+            def func_7a_4(
+                    arg1,
+                    arg2,
+                    arg3,
+            ):
+                print(4)
+            print(3)
+        print(2)
+    print(1)                
+"""
+
+
+case_7b = """
+def func7b_1():
+    def func7b_2(arg1, *, arg2, arg3):
+        def func7b_3(
+                arg1, arg2, *, arg3):
+            def func_7b_4(
+                    arg1,
+                    arg2,
+                    arg3,
+            ):
+                def func_7b_5():
+                    print(5)
+                print(4)
+            print(3)
+        print(2)
+    print(1)
+"""
 
 
 def collect_all_cases():
@@ -176,4 +211,6 @@ def collect_all_cases():
         case_5c,
         case_5d,
         case_5e,
+        case_7a,  # There's no case 6. This is to better match "no OK cases"
+        case_7b,
     )

@@ -487,6 +487,56 @@ case_6j = (
 )
 
 
+case_7a_src = """
+def func7a_1():
+    def func7a_2():
+        def func7a_3():
+            def func_7a_4(
+                arg1,
+                arg2,
+                arg3,
+            ):
+                print(4)
+            print(3)
+        print(2)
+    print(1)                
+"""
+case_7a = (
+    case_7a_src, [(6, 17, IND101), (7, 17, IND101), (8, 17, IND101)],
+)
+
+
+case_7b_src = """
+def func7b_1():
+    def func7b_2(arg1,
+        *, arg2, arg3):
+        def func7b_3(arg1,
+                     arg2,
+                     *,
+                     arg3):
+            def func_7b_4(
+                arg1,
+                arg2,
+                arg3,
+            ):
+                def func_7b_5():
+                    print(5)
+                print(4)
+            print(3)
+        print(2)
+    print(1)
+"""
+case_7b = (
+    case_7b_src,
+    [
+        (4, 9, IND101), (4, 9, IND102), (4, 12, IND102), (4, 18, IND102),
+        (6, 22, IND101), (7, 22, IND101), (8, 22, IND101),
+        (6, 22, IND102), (7, 22, IND102), (8, 22, IND102),
+        (10, 17, IND101), (11, 17, IND101), (12, 17, IND101),
+    ],
+)
+
+
 def collect_all_cases():
     return (
         case_1a,
@@ -526,4 +576,6 @@ def collect_all_cases():
         case_6h,
         case_6i,
         case_6j,
+        case_7a,
+        case_7b,
     )
