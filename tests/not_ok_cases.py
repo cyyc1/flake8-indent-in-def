@@ -453,10 +453,10 @@ case_6h = (
 
 case_6i_src = """
 def func6i(
-    arg1, 
+    arg1,
     arg2,
-    *, 
-    arg3, 
+    *,
+    arg3,
     **arg4,
 ):
     print(2)
@@ -475,9 +475,9 @@ case_6i = (
 
 case_6j_src = """
 def func6j(
-    arg1, 
+    arg1,
     arg2,
-    *, arg3, 
+    *, arg3,
     **arg4,
 ):
     print(2)
@@ -499,7 +499,7 @@ def func7a_1():
                 print(4)
             print(3)
         print(2)
-    print(1)                
+    print(1)
 """
 case_7a = (
     case_7a_src, [(6, 16, IND101), (7, 16, IND101), (8, 16, IND101)],

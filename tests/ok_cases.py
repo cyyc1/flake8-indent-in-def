@@ -145,10 +145,10 @@ def func5d(
 
 case_5e = """
 def func5e(
-        arg1, 
+        arg1,
         arg2,
-        *, 
-        arg3, 
+        *,
+        arg3,
         **arg4,
 ):
     print(2)
@@ -168,7 +168,7 @@ def func7a_1():
                 print(4)
             print(3)
         print(2)
-    print(1)                
+    print(1)
 """
 
 

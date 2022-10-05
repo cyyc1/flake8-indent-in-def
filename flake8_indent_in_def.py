@@ -205,7 +205,6 @@ class Visitor(ast.NodeVisitor):
             next_next_token = self._tokens[i + 2]
 
             this_lineno = this_token.start[0]
-            this_col = this_token.start[1] + 1
             if func_def_lineno <= this_lineno <= func_end_lineno:
                 if self._is_qualifying_star(
                     this=this_token,
