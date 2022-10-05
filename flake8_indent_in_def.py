@@ -39,14 +39,15 @@ class Visitor(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         sorted_args, arg_type_lookup, has_star = self._collect_func_args(node)
-        self._visit_func_args_or_class_bases(
-            node=node,
-            args_or_bases=sorted_args,
-            is_func=True,
-            arg_type_lookup=arg_type_lookup,
-        )
         if has_star:
-            self._visit_star_in_arg_list(node)
+            self._visit_node_with_star_in_arg_list(node)
+        else:
+            self._visit_func_args_or_class_bases(
+                node=node,
+                args_or_bases=sorted_args,
+                is_func=True,
+                arg_type_lookup=arg_type_lookup,
+            )
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         self._visit_func_args_or_class_bases(node, node.bases, is_func=False)
@@ -56,23 +57,24 @@ class Visitor(ast.NodeVisitor):
             cls,
             node: ast.FunctionDef,
     ) -> Tuple[List, Dict[ast.arg, ArgType], bool]:
+        """Collect all args from function def; detect presence of * argument"""
         all_args: List[ast.arg] = []
         arg_type_lookup: Dict[ast.arg, ArgType] = {}
 
         has_star = False  # it means there's a '*,' in the argument list
 
-        if node.args.args:
+        if node.args.args:  # List[ast.arg]
             all_args.extend(node.args.args)
             for arg_ in node.args.args:
                 arg_type_lookup[arg_] = ArgType.REGULAR
 
-        if node.args.posonlyargs:
+        if node.args.posonlyargs:  # List[ast.arg]
             has_star = True
             all_args.extend(node.args.posonlyargs)
             for arg_ in node.args.posonlyargs:
                 arg_type_lookup[arg_] = ArgType.POS_ONLY
 
-        if node.args.kwonlyargs:
+        if node.args.kwonlyargs:  # List[ast.arg]
             has_star = True
             all_args.extend(node.args.kwonlyargs)
             for arg_ in node.args.kwonlyargs:
@@ -128,7 +130,10 @@ class Visitor(ast.NodeVisitor):
                         col_offset = self._calc_col_offset(item, arg_type)
                         self.violations.append((item.lineno, col_offset, code01))
 
-            self.generic_visit(node)
+        # Place this line OUTSIDE `if len(args_or_bases) > 0`, otherwise
+        # nested functions/classes will not be detected if the parent function
+        # has an empty input argument list
+        self.generic_visit(node)
 
     @classmethod
     def _calc_col_offset(
@@ -137,7 +142,7 @@ class Visitor(ast.NodeVisitor):
             arg_type: Optional[ArgType] = None,
     ) -> int:
         if isinstance(item, ast.Name):  # this means base class
-            return item.col_offset + 1
+            return item.col_offset
 
         arg_type = ArgType.REGULAR if arg_type is None else arg_type
         return cls._calc_col_offset_for_func_args(item, arg_type)
@@ -149,13 +154,13 @@ class Visitor(ast.NodeVisitor):
             arg_type: ArgType,
     ) -> int:
         if arg_type in {ArgType.REGULAR, ArgType.POS_ONLY, ArgType.KW_ONLY}:
-            return arg_.col_offset + 1
+            return arg_.col_offset
 
         if arg_type == ArgType.VARARG:
-            return arg_.col_offset + 1 - 1  # '-1' because of '*' before vararg
+            return arg_.col_offset - 1  # '-1' because of '*' before vararg
 
         if arg_type == ArgType.KWARG:
-            return arg_.col_offset + 1 - 2  # '-2' because of '**' before kwarg
+            return arg_.col_offset - 2  # '-2' because of '**' before kwarg
 
     @classmethod
     def _not_expected_indent(
@@ -180,7 +185,13 @@ class Visitor(ast.NodeVisitor):
 
         return item.col_offset - def_col_offset != expected_indent_
 
-    def _visit_star_in_arg_list(self, node: ast.FunctionDef):
+    def _visit_node_with_star_in_arg_list(self, node: ast.FunctionDef) -> None:
+        """
+        Within this method, we add '*' as an argument into the node's AST
+        structure. Somehow, Python stdlib `ast` omits the standalone '*' when
+        parsing Python code. Therefore we have to find '*' by tokens and
+        manually add it to the structure, as if it were a regular argument.
+        """
         func_def_lineno = node.lineno
         func_end_lineno = node.end_lineno
 
@@ -190,43 +201,67 @@ class Visitor(ast.NodeVisitor):
         # the ENCODING token (type 62).
         for i in range(1, len(self._tokens) - 2):
             this_token = self._tokens[i]
+            next_token = self._tokens[i + 1]
+            next_next_token = self._tokens[i + 2]
+
             this_lineno = this_token.start[0]
             this_col = this_token.start[1] + 1
-            if func_def_lineno < this_lineno <= func_end_lineno:
-                if self._is_a_violation(node, self._tokens, i):
-                    self.violations.append((this_lineno, this_col, IND101))
+            if func_def_lineno <= this_lineno <= func_end_lineno:
+                if self._is_qualifying_star(
+                    this=this_token,
+                    next=next_token,
+                    next_next=next_next_token,
+                ):
+                    self._replace_args_field(node, this_token)
+                    self.visit_FunctionDef(node)
+                    return  # because there can only be one '*' in the arg list
 
     @classmethod
-    def _is_a_violation(
+    def _replace_args_field(
             cls,
             node: ast.FunctionDef,
-            tokens: List[tokenize.TokenInfo],
-            index: int,
-    ) -> bool:
-        prev_token = tokens[index - 1]
-        this_token = tokens[index]
-        next_token = tokens[index + 1]
-        next_next_token = tokens[index + 2]
-
-        is_qualifying_star = (
-            cls._is_star_comma(this=this_token, next=next_token)
-            or cls._is_star_newline_comma(
-                this=this_token,
-                next=next_token,
-                next_next=next_next_token,
-            )
+            token: tokenize.TokenInfo,
+    ) -> None:
+        star_arg = cls._build_arg_obj(token)
+        new_args_unsorted = (
+            node.args.args  # List[ast.arg]
+            + [star_arg]
+            + node.args.posonlyargs  # List[ast.arg]
+            + node.args.kwonlyargs  # List[ast.arg]
         )
 
-        is_1st_symbol = cls._star_is_1st_non_empty_symbol_on_this_line(
-            prev=prev_token,
-            this=this_token,
+        new_args = sorted(
+            new_args_unsorted,
+            key=lambda x: (x.lineno, x.col_offset),  # first line, then col
         )
 
-        not_expected_indent = (
-            this_token.start[1] - node.col_offset != EXPECTED_INDENT
+        node.args.posonlyargs = []
+        node.args.kwonlyargs = []
+        node.args.args = new_args
+
+    @classmethod
+    def _build_arg_obj(cls, token: tokenize.TokenInfo) -> ast.arg:
+        return ast.arg(
+            lineno=token.start[0],
+            col_offset=token.start[1],
+            end_lineno=token.end[0],
+            end_col_offset=token.end[1],
+            arg='*',
+            annotation=None,
+            type_comment=None,
         )
 
-        return is_qualifying_star and is_1st_symbol and not_expected_indent
+    @classmethod
+    def _is_qualifying_star(
+            cls,
+            this: tokenize.TokenInfo,
+            next: tokenize.TokenInfo,
+            next_next: tokenize.TokenInfo,
+    ):
+        return (
+            cls._is_star_newline_comma(this=this, next=next, next_next=next_next)
+            or cls._is_star_comma(this=this, next=next)
+        )
 
     @classmethod
     def _is_star_comma(
@@ -263,14 +298,6 @@ class Visitor(ast.NodeVisitor):
             token.type in {NL_TOKEN_CODE, NEWLINE_TOKEN_CODE}
             and token.string == '\n'
         )
-
-    @classmethod
-    def _star_is_1st_non_empty_symbol_on_this_line(
-            cls,
-            prev: tokenize.TokenInfo,  # the previous token
-            this: tokenize.TokenInfo,  # it's expected to be '*'
-    ) -> bool:
-        return prev.start[0] < this.start[0] or prev.string.strip() == ''
 
 
 class Plugin:
