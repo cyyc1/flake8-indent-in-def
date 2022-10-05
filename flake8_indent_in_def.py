@@ -142,7 +142,7 @@ class Visitor(ast.NodeVisitor):
             arg_type: Optional[ArgType] = None,
     ) -> int:
         if isinstance(item, ast.Name):  # this means base class
-            return item.col_offset + 1
+            return item.col_offset
 
         arg_type = ArgType.REGULAR if arg_type is None else arg_type
         return cls._calc_col_offset_for_func_args(item, arg_type)
@@ -154,13 +154,13 @@ class Visitor(ast.NodeVisitor):
             arg_type: ArgType,
     ) -> int:
         if arg_type in {ArgType.REGULAR, ArgType.POS_ONLY, ArgType.KW_ONLY}:
-            return arg_.col_offset + 1
+            return arg_.col_offset
 
         if arg_type == ArgType.VARARG:
-            return arg_.col_offset + 1 - 1  # '-1' because of '*' before vararg
+            return arg_.col_offset - 1  # '-1' because of '*' before vararg
 
         if arg_type == ArgType.KWARG:
-            return arg_.col_offset + 1 - 2  # '-2' because of '**' before kwarg
+            return arg_.col_offset - 2  # '-2' because of '**' before kwarg
 
     @classmethod
     def _not_expected_indent(
